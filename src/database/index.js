@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 const { join } = require("path");
 
-const dbConfig = require("..");
+const dbConfig = require("../config/database");
 
 const logger = require("../util/logger");
 const execPromise = require("../util/childPromise");
@@ -14,7 +14,7 @@ class Database {
 	async init() {
 		try {
 			const models = await execPromise(
-				`ls ${join(__dirname, "..", "models")}`,
+				`ls ${join(__dirname, "models")}`,
 				{}
 			);
 			const { stdout } = models;

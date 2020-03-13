@@ -5,12 +5,17 @@ const { json, urlencoded } = require("body-parser");
 const Ddos = require("ddos");
 const cors = require("cors");
 
+const Database = require("../database");
+
 const logger = require("../util/logger");
 const exec = require("../util/childPromise");
 
 class Server {
 	constructor() {
 		this.app = express();
+		this.middlewares();
+		this.controllers();
+		new Database().init();
 	}
 
 	middlewares() {
