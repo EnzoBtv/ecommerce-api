@@ -1,10 +1,14 @@
 {
 	"name": "ecommerce-api",
 	"version": "1.0.0",
-	"main": "index.js",
+	"main": "./src/index.js",
 	"repository": "https://github.com/EnzoBtv/ecommerce-api.git",
-	"author": "EnzoBtvTC <enzo.batrov@tradersclub.com.br>",
+	"author": "EnzoBtv <enzo_batrov@hotmail.com>",
 	"license": "MIT",
+	"scripts": {
+		"start": "nodemon",
+		"lint": "yarn eslint src --ext js"
+	},
 	"dependencies": {
 		"@sentry/node": "^5.14.0",
 		"body-parser": "^1.19.0",
@@ -13,7 +17,8 @@
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
 		"pg": "^7.18.2",
-		"sequelize": "^5.21.5"
+		"sequelize": "^5.21.5",
+		"winston": "^3.2.1"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^8.3.5",

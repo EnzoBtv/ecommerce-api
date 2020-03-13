@@ -1,7 +1,13 @@
+const { join } = require("path");
+
 const express = require("express");
 const { json, urlencoded } = require("body-parser");
 const Ddos = require("ddos");
 const cors = require("cors");
+
+const logger = require("../util/logger");
+const exec = require("../util/childPromise");
+
 class Server {
 	constructor() {
 		this.app = express();
@@ -14,8 +20,32 @@ class Server {
 		this.app.use(cors());
 	}
 
-	controllers() {
-
+	async controllers() {
+		try {
+			logger.info("Trying no initialize all controllers");
+			const controllers = await exec(`ls ${join(__dirname, "..", "controllers")}`);
+			const { stdout } = controllers;
+			const controllerArray = stdout.split("\n");
+			for (const controller of controllerArray) {
+				if (controller) {
+					logger.info(`Initilizing ${controller} Controller`);
+					const reqController = require(join(
+						__dirname,
+						"..",
+						"controllers",
+						controller
+					));
+					this.app.use(new reqController().router);
+				}
+			}
+		} catch (ex) {
+			logger.error(
+				`It wasn't possible to initialize the controllers, error: ${JSON.stringify(
+					ex
+				)}`
+			);
+			throw new Error(JSON.stringify(ex));
+		}
 	}
 }
 

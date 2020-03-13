@@ -25,7 +25,6 @@ class Database {
 			for (let i = modelsArray.length - 2; i >= 0; i--) {
 				const reqModel = require(join(
 					__dirname,
-					"..",
 					"models",
 					modelsArray[i]
 				));
