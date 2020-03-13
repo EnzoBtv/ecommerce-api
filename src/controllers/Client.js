@@ -2,7 +2,7 @@ const { Router } = require("express");
 
 const Client = require("../database/models/Client");
 
-const { SUCCESS, INTERNAL_SERVER_ERROR, BAD_REQUEST } = require("../constants/HttpStatus");
+const { SUCCESS, INTERNAL_SERVER_ERROR, BAD_REQUEST, CONFLICT, NOT_FOUND } = require("../constants/HttpStatus");
 
 const logger = require("../util/logger");
 module.exports = class ClientController {
@@ -25,7 +25,19 @@ module.exports = class ClientController {
 
 			if (!email || !name) {
 				logger.error("Client#store failed due to missing parameters");
-				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" })
+				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
+			}
+
+			const oldClient = await Client.findOne({
+				where: {
+					email
+				}
+			});
+
+			if (oldClient) {
+				logger.error("Client#store failed due to email already exists");
+				res.status(CONFLICT).json({ error: "Esse email já está cadastrado em nosso sistema" });
+
 			}
 
 			const client = await Client.create({
@@ -35,7 +47,7 @@ module.exports = class ClientController {
 
 			if (!client) {
 				logger.error("Client#store failed due to internal server error");
-				res.status(BAD_REQUEST).json({ error: "Não foi possível realizar a criação de usuário, por favor, entre em contato com o nosso suporte" })
+				res.status(INTERNAL_SERVER_ERROR).json({ error: "Não foi possível realizar a criação de usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
 			res.status(SUCCESS).json({ success: true });
@@ -53,7 +65,7 @@ module.exports = class ClientController {
 
 			if (!email || !name) {
 				logger.error("Client#update failed due to missing parameters");
-				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" })
+				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
 			}
 
 			const [, [client]] = await Client.update({
@@ -67,7 +79,7 @@ module.exports = class ClientController {
 
 			if (!client) {
 				logger.error("Client#update failed due to client not found in database");
-				res.status(BAD_REQUEST).json({ error: "Não foi possível atualizar seu usuário, por favor, entre em contato com o nosso suporte" })
+				res.status(NOT_FOUND).json({ error: "Não foi possível atualizar seu usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
 			res.status(SUCCESS).json({ success: true });
@@ -86,7 +98,7 @@ module.exports = class ClientController {
 
 			if (!client) {
 				logger.error("Client#index failed due to client not found in database");
-				res.status(BAD_REQUEST).json({ error: "Não foi possível encontrar o seu usuário, por favor, entre em contato com o nosso suporte" })
+				res.status(NOT_FOUND).json({ error: "Não foi possível encontrar o seu usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
 			res.status(SUCCESS).json(client.toJSON());
@@ -109,7 +121,7 @@ module.exports = class ClientController {
 
 			if (!client) {
 				logger.error("Client#destroy failed due to client not found in database");
-				res.status(BAD_REQUEST).json({ error: "Não foi possível deletar seu usuário, por favor, entre em contato com o nosso suporte" })
+				res.status(NOT_FOUND).json({ error: "Não foi possível deletar seu usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
 			res.status(SUCCESS).json({ success: true });
