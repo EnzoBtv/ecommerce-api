@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { sign } = require("jsonwebtoken");
-const { SHA512, enc: { Base64: { stringify } } } = require("crypto-js");
+const cryptoJs = require("crypto-js");
 
 const Client = require("../database/models/Client");
 
@@ -24,7 +24,7 @@ module.exports = class ClientController {
 
 			if (!email || !password) {
 				logger.error("Auth#store failed due to missing parameters");
-				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
+				return res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
 			}
 
 			const user = await Client.findOne({
@@ -35,12 +35,12 @@ module.exports = class ClientController {
 
 			if (!user) {
 				logger.error("Auth#store failed due to user not found in database");
-				res.status(NOT_FOUND).json({ error: "Esse email não está cadastrado" });
+				return res.status(NOT_FOUND).json({ error: "Esse email não está cadastrado" });
 			}
-
-			if (user.password !== stringify(SHA512(password))) {
+			const shaPass = cryptoJs.SHA512(password);
+			if (user.password !== cryptoJs.enc.Base64.stringify(shaPass)) {
 				logger.error("Auth#store failed due to incorrect password");
-				res.status(UNAUTHORIZED).json({ error: "Senha incorreta, por favor, tente novamente" });
+				return res.status(UNAUTHORIZED).json({ error: "Senha incorreta, por favor, tente novamente" });
 			}
 
 			const token = sign({
@@ -49,7 +49,7 @@ module.exports = class ClientController {
 				expiresIn: 3600
 			});
 
-			res.status(SUCCESS).json({ token });
+			return res.status(SUCCESS).json({ token });
 		} catch (e) {
 			logger.error(e.message || e);
 			logger.error(__filename);

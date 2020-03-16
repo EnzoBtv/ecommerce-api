@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { SHA512, enc: { Base64: { stringify } } } = require("crypto-js");
+const cryptoJS = require("crypto-js");
 
 const Client = require("../database/models/Client");
 
@@ -27,7 +27,7 @@ module.exports = class ClientController {
 
 			if (!email || !name || !password) {
 				logger.error("Client#store failed due to missing parameters");
-				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
+				return res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
 			}
 
 			const oldClient = await Client.findOne({
@@ -38,10 +38,10 @@ module.exports = class ClientController {
 
 			if (oldClient) {
 				logger.error("Client#store failed due to email already exists");
-				res.status(CONFLICT).json({ error: "Esse email já está cadastrado em nosso sistema" });
+				return res.status(CONFLICT).json({ error: "Esse email já está cadastrado em nosso sistema" });
 			}
-
-			const newPassword = stringify(SHA512(password));
+			const shaPass = cryptoJS.SHA512(password);
+			const newPassword = cryptoJS.enc.Base64.stringify(shaPass);
 
 			const client = await Client.create({
 				name,
@@ -51,10 +51,10 @@ module.exports = class ClientController {
 
 			if (!client) {
 				logger.error("Client#store failed due to internal server error");
-				res.status(INTERNAL_SERVER_ERROR).json({ error: "Não foi possível realizar a criação de usuário, por favor, entre em contato com o nosso suporte" });
+				return res.status(INTERNAL_SERVER_ERROR).json({ error: "Não foi possível realizar a criação de usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
-			res.status(SUCCESS).json({ success: true });
+			return res.status(SUCCESS).json({ success: true });
 		} catch (e) {
 			logger.error(e.message || e);
 			logger.error(__filename);
@@ -69,7 +69,7 @@ module.exports = class ClientController {
 
 			if (!email || !name) {
 				logger.error("Client#update failed due to missing parameters");
-				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
+				return res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
 			}
 
 			const [, [client]] = await Client.update({
@@ -83,10 +83,10 @@ module.exports = class ClientController {
 
 			if (!client) {
 				logger.error("Client#update failed due to client not found in database");
-				res.status(NOT_FOUND).json({ error: "Não foi possível atualizar seu usuário, por favor, entre em contato com o nosso suporte" });
+				return res.status(NOT_FOUND).json({ error: "Não foi possível atualizar seu usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
-			res.status(SUCCESS).json({ success: true });
+			return res.status(SUCCESS).json({ success: true });
 		} catch (e) {
 			logger.error(e.message || e);
 			logger.error(__filename);
@@ -105,7 +105,7 @@ module.exports = class ClientController {
 				res.status(NOT_FOUND).json({ error: "Não foi possível encontrar o seu usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
-			res.status(SUCCESS).json(client.toJSON());
+			return res.status(SUCCESS).json(client.toJSON());
 		} catch (e) {
 			logger.error(e.message || e);
 			logger.error(__filename);
@@ -128,7 +128,7 @@ module.exports = class ClientController {
 				res.status(NOT_FOUND).json({ error: "Não foi possível deletar seu usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
-			res.status(SUCCESS).json({ success: true });
+			return res.status(SUCCESS).json({ success: true });
 		} catch (e) {
 			logger.error(e.message || e);
 			logger.error(__filename);
