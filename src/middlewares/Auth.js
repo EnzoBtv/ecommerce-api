@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
 					"O token utilizado está inválido, por favor, refaça seu login"
 			});
 		}
-		req.id = jwt.verify(req.headers.token, process.env.SECRET);
+		req.id = jwt.verify(req.headers.token, process.env.SECRET).id;
 		return next();
 	} catch (ex) {
 		res.status(UNAUTHORIZED).json({

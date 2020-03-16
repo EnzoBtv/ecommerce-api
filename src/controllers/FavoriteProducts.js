@@ -1,11 +1,13 @@
 const { Router } = require("express");
 
 const Client = require("../database/models/Client");
+const FavoriteProducts = require("../database/models/FavoriteProducts");
 
 const { SUCCESS, INTERNAL_SERVER_ERROR, BAD_REQUEST, NOT_FOUND } = require("../constants/HttpStatus");
 
 const logger = require("../util/logger");
-module.exports = class ClientController {
+const privateRoute = require("../middlewares/Auth");
+module.exports = class FavoriteProductsController {
 	constructor() {
 		this.router = Router();
 		this.path = "/product/favorite";
@@ -13,9 +15,9 @@ module.exports = class ClientController {
 	}
 
 	init() {
-		this.router.post(this.path, this.store);
-		this.router.get(this.path, this.index);
-		this.router.delete(this.path, this.destroy);
+		this.router.post(this.path, privateRoute, this.store);
+		this.router.get(this.path, privateRoute, this.index);
+		this.router.delete(this.path, privateRoute, this.destroy);
 	}
 
 	async store(req, res) {
@@ -34,7 +36,9 @@ module.exports = class ClientController {
 				res.status(INTERNAL_SERVER_ERROR).json({ error: "Não foi possível realizar a criação de usuário, por favor, entre em contato com o nosso suporte" });
 			}
 
-			client.addfavoriteProducts();
+			client.addfavoriteProducts(await FavoriteProducts.create({
+
+			}));
 
 			res.status(SUCCESS).json({ success: true });
 		} catch (e) {

@@ -1,10 +1,12 @@
 const { Router } = require("express");
+const { SHA512, enc: { Base64: { stringify } } } = require("crypto-js");
 
 const Client = require("../database/models/Client");
 
 const { SUCCESS, INTERNAL_SERVER_ERROR, BAD_REQUEST, CONFLICT, NOT_FOUND } = require("../constants/HttpStatus");
 
 const logger = require("../util/logger");
+const privateRoute = require("../middlewares/Auth");
 module.exports = class ClientController {
 	constructor() {
 		this.router = Router();
@@ -14,16 +16,16 @@ module.exports = class ClientController {
 
 	init() {
 		this.router.post(this.path, this.store);
-		this.router.put(this.path, this.update);
-		this.router.get(this.path, this.index);
-		this.router.put(this.path, this.update);
+		this.router.put(this.path, privateRoute, this.update);
+		this.router.get(this.path, privateRoute, this.index);
+		this.router.put(this.path, privateRoute, this.update);
 	}
 
 	async store(req, res) {
 		try {
-			const { email, name } = req.body;
+			const { email, name, password } = req.body;
 
-			if (!email || !name) {
+			if (!email || !name || !password) {
 				logger.error("Client#store failed due to missing parameters");
 				res.status(BAD_REQUEST).json({ error: "Estão faltando parametros na requisição" });
 			}
@@ -37,12 +39,14 @@ module.exports = class ClientController {
 			if (oldClient) {
 				logger.error("Client#store failed due to email already exists");
 				res.status(CONFLICT).json({ error: "Esse email já está cadastrado em nosso sistema" });
-
 			}
+
+			const newPassword = stringify(SHA512(password));
 
 			const client = await Client.create({
 				name,
-				email
+				email,
+				password: newPassword
 			});
 
 			if (!client) {
