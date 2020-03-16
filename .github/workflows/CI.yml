@@ -1,0 +1,32 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+            - name: Use Node.js 12
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 12
+            - name: Install dependencies with yarn
+              run: yarn
+            - name: Check the commit messages
+              uses: wagoid/commitlint-github-action@v1
+            - name: Check the Linting
+              uses: yarn lint
