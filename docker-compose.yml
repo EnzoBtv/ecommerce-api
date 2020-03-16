@@ -22,7 +22,6 @@ services:
             - "/usr/backend/node_modules"
         environment:
             - PORT=3333
-            - CORES=2
             - DB_HOST=postgres
             - DB_USERNAME=root
             - DB_PASSWORD=root
