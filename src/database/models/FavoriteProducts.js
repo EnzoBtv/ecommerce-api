@@ -17,7 +17,8 @@ class FavoriteProducts extends Model {
 				},
 			},
 			{
-				sequelize: connection
+				sequelize: connection,
+				tableName: "favorite-products"
 			}
 		);
 	}
